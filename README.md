@@ -1,10 +1,14 @@
 # Eventel(イベント連携型ホテル検索サービス)
 
+
 ## セットアップ
+
 
 ```bash
 git clone <このリポジトリ>
-cd eventel
+cd eventel/frontend
+npm create vue@latest .
+cd ..
 docker compose up
 ```
 
