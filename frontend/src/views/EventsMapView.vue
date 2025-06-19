@@ -1,21 +1,24 @@
 <template>
   <div class="event-map-layout">
-    <!-- イベント選択 -->
-    <EventSelector @event-selected="onSelect" />
+  <!-- イベント選択 -->
+  <EventSelector @event-selected="onSelect" />
 
-    <!-- マップと詳細表示を横並びで -->
-    <div class="main-content">
-      <MapDisplay
-        :eventId="selectedEventId"
-        @hotel-selected="onHotelSelect"
-      />
-      <HotelDetailPanel
-        v-if="selectedHotelNo"
-        :hotelNo="selectedHotelNo"
-        :eventDate="eventDetail?.date"
-      />
-    </div>
+  <!-- マップと詳細表示 -->
+  <div
+    class="main-content"
+    :class="{ 'single': !selectedHotelNo }"
+  >
+    <MapDisplay
+      :eventId="selectedEventId"
+      @hotel-selected="onHotelSelect"
+    />
+    <HotelDetailPanel
+      v-if="selectedHotelNo"
+      :hotelNo="selectedHotelNo"
+      :eventDate="eventDetail?.date"
+    />
   </div>
+</div>
 </template>
 
 <script setup>
@@ -44,16 +47,6 @@ watch(selectedEventId, async (id) => {
 });
 </script>
 <style scoped>
-.event-map-layout {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5em;
-  width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 2vw;
-}
-
 .main-content {
   display: flex;
   flex-direction: row;
@@ -61,39 +54,42 @@ watch(selectedEventId, async (id) => {
   width: 100%;
   min-height: 600px;
   align-items: flex-start;
+  transition: all 0.2s;
+}
+
+/* パネルがないときは中央寄せ＆広く */
+.main-content.single {
+  justify-content: center;
 }
 
 .main-content > *:first-child {
-  /* マップエリアは幅大きめ・高さ十分に */
   flex: 3 1 0%;
   min-width: 400px;
   min-height: 600px;
   max-width: 1000px;
-  /* 必要ならカード背景は外す */
   background: none;
 }
 
+.main-content.single > *:first-child {
+  flex: none;
+  max-width: 680px; /* ここで大きめに中央寄せ */
+  min-width: 420px;
+}
+
 .main-content > *:last-child {
-  /* 詳細パネルは狭め */
   flex: 1 1 0%;
   max-width: 420px;
   min-width: 280px;
 }
 
-/* EventSelectorも幅いっぱいにせず中央上部に */
-.event-map-layout > *:first-child {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  margin-bottom: 1em;
-}
-
-/* モバイルは縦並び */
 @media (max-width: 900px) {
-  .main-content {
+  .main-content,
+  .main-content.single {
     flex-direction: column;
     gap: 1.2em;
     min-height: unset;
+    justify-content: flex-start;
+    align-items: stretch;
   }
   .main-content > *:first-child,
   .main-content > *:last-child {
@@ -102,6 +98,11 @@ watch(selectedEventId, async (id) => {
     min-width: 0;
     min-height: 320px;
   }
+  .main-content.single > *:first-child {
+    max-width: 100%;
+    min-width: 0;
+  }
 }
+
 
 </style>

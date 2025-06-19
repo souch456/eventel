@@ -20,6 +20,7 @@ DATABASE_URL = os.environ['DATABASE_URL']
 engine = create_engine(DATABASE_URL)
 
 RAKUTEN_APP_ID = os.getenv("APP_ID")
+RAKUTEN_AFFILIATE_ID = os.getenv("affiliateId")
 
 app = FastAPI()
 
@@ -78,6 +79,7 @@ def get_hotels(event_id: int):
     url = "https://app.rakuten.co.jp/services/api/Travel/SimpleHotelSearch/20170426"
     params = {
         "applicationId": RAKUTEN_APP_ID,
+        "affiliateId": RAKUTEN_AFFILIATE_ID,
         "format": "json",
         "datumType": 1,            # 世界測地系、単位は度
         "latitude": lat,
@@ -196,6 +198,7 @@ def search_vacant_hotels(
     url = "https://app.rakuten.co.jp/services/api/Travel/VacantHotelSearch/20170426"
     params = {
         "applicationId": RAKUTEN_APP_ID,
+        "affiliateId": RAKUTEN_AFFILIATE_ID,
         "format": "json",
         "hotelNo": hotelNo,
         "checkinDate": checkinDate,
