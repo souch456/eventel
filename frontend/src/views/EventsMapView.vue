@@ -1,108 +1,176 @@
 <template>
-  <div class="event-map-layout">
-  <!-- イベント選択 -->
-  <EventSelector @event-selected="onSelect" />
-
-  <!-- マップと詳細表示 -->
-  <div
-    class="main-content"
-    :class="{ 'single': !selectedHotelNo }"
-  >
-    <MapDisplay
-      :eventId="selectedEventId"
-      @hotel-selected="onHotelSelect"
-    />
-    <HotelDetailPanel
-      v-if="selectedHotelNo"
-      :hotelNo="selectedHotelNo"
-      :eventDate="eventDetail?.date"
-    />
+  <div class="eventel-main">
+    <header>
+      <h1>Eventel - イベント連動型ホテル検索</h1>
+    </header>
+    <div class="selector-header">
+      <EventSelector @event-selected="onSelect" />
+    </div>
+    <div
+      class="map-main-layout"
+      :class="{ mobile: isMobile }"
+    >
+      <MapDisplay
+        :eventId="selectedEventId"
+        @hotel-selected="onHotelSelect"
+        class="gmap-mobile-fixed"
+      />
+      <HotelDetailBottomSheet
+        v-if="isMobile && selectedHotelNo"
+        :hotelNo="selectedHotelNo"
+        :eventDate="eventDetail?.date"
+        :open="!!selectedHotelNo"
+        @close="selectedHotelNo = null"
+      />
+      <HotelDetailPanel
+        v-if="!isMobile && selectedHotelNo"
+        :hotelNo="selectedHotelNo"
+        :eventDate="eventDetail?.date"
+      />
+    </div>
+    <footer>
+      &copy; 2025 Eventel. All rights reserved.
+    </footer>
   </div>
-</div>
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import EventSelector from "../components/EventSelector.vue";
 import MapDisplay from "../components/MapDisplay.vue";
 import HotelDetailPanel from "../components/HotelDetailPanel.vue";
+import HotelDetailBottomSheet from "../components/HotelDetailBottomSheet.vue";
 import { fetchEventDetail } from "../api/api.js";
 
 const selectedEventId = ref(null);
 const selectedHotelNo = ref(null);
 const eventDetail = ref(null);
 
-function onSelect(id) {
-  selectedEventId.value = id;
+// デバイス幅でスマホ判定
+const isMobile = ref(false);
+function handleResize() {
+  isMobile.value = window.innerWidth < 900;
 }
-
-function onHotelSelect(hotelNo) {
-  selectedHotelNo.value = hotelNo;
-}
-
-// イベント選択で詳細も再取得
+onMounted(() => {
+  handleResize();
+  window.addEventListener("resize", handleResize);
+});
 watch(selectedEventId, async (id) => {
   if (!id) return;
   eventDetail.value = await fetchEventDetail(id);
+  selectedHotelNo.value = null;
 });
+function onSelect(id) {
+  selectedEventId.value = id;
+}
+function onHotelSelect(hotelNo) {
+  selectedHotelNo.value = hotelNo;
+}
 </script>
+
 <style scoped>
-.main-content {
+header {
+  background: linear-gradient(90deg, #2196f3 0%, #1976d2 100%);
+  color: #fff;
+  padding: 1.2em 0;
+  text-align: center;
+  box-shadow: 0 2px 10px #0002;
+  width: 100vw;
+}
+header h1 {
+  font-size: 1.28em;
+  font-weight: 700;
+  margin: 0;
+  white-space: nowrap;
+  overflow-x: auto;
+  text-overflow: ellipsis;
+  letter-spacing: 0.04em;
+}
+.eventel-main {
+  min-height: 100vh;
+  width: 100vw;
+  background: #f6f8fa;
+  overflow-x: hidden;
+}
+.selector-header {
+  background: #fff;
+  padding: 0.5em 1em;
+  border-bottom: 1px solid #e3e9f0;
+}
+.map-main-layout {
   display: flex;
   flex-direction: row;
-  gap: 2em;
-  width: 100%;
-  min-height: 600px;
-  align-items: flex-start;
-  transition: all 0.2s;
+  height: calc(100vh - 56px - 56px); /* ヘッダー＋セレクタ高さ(仮) */
+  max-width: 1400px;
+  margin: 0 auto;
+  position: relative;
 }
-
-/* パネルがないときは中央寄せ＆広く */
-.main-content.single {
-  justify-content: center;
-}
-
-.main-content > *:first-child {
+.gmap-mobile-fixed {
   flex: 3 1 0%;
-  min-width: 400px;
-  min-height: 600px;
+  min-width: 350px;
+  min-height: 420px;
   max-width: 1000px;
-  background: none;
+  height: 100%;
 }
-
-.main-content.single > *:first-child {
-  flex: none;
-  max-width: 680px; /* ここで大きめに中央寄せ */
-  min-width: 420px;
+.map-main-layout.mobile {
+  flex-direction: column;
+  height: calc(100vh - 56px - 56px);
 }
-
-.main-content > *:last-child {
-  flex: 1 1 0%;
-  max-width: 420px;
-  min-width: 280px;
+footer {
+  width: 100vw;
+  background: #e3e9f0;
+  color: #555;
+  text-align: center;
+  padding: 0.6em 0;
+  font-size: 0.93em;
+  border-top: 1px solid #d4dae2;
+  position: relative;
+  bottom: 0;
 }
-
 @media (max-width: 900px) {
-  .main-content,
-  .main-content.single {
+  .eventel-main {
+    width: 100vw;
+    min-width: 0;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+  .map-main-layout {
+    display: flex;
     flex-direction: column;
-    gap: 1.2em;
-    min-height: unset;
-    justify-content: flex-start;
-    align-items: stretch;
-  }
-  .main-content > *:first-child,
-  .main-content > *:last-child {
-    flex: none;
-    max-width: 100%;
+    width: 100vw;
+    max-width: 100vw;
     min-width: 0;
-    min-height: 320px;
+    height: auto;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
   }
-  .main-content.single > *:first-child {
-    max-width: 100%;
+  .gmap-mobile-fixed {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    min-width: 0 !important;
+    height: 350px !important;      /* ここは必要に応じて auto, min/max-height にしてもOK */
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    border-radius: 0 !important;
+  }
+  .selector-header, .selector-card {
+    width: 100vw;
+    max-width: 100vw;
     min-width: 0;
+    box-sizing: border-box;
+    margin: 0;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+  }
+  header h1 {
+    font-size: 1.05em;
+    padding: 0 0.5em;
+  }
+  footer {
+    font-size: 0.85em;
+    padding: 0.5em 0;
   }
 }
-
-
 </style>

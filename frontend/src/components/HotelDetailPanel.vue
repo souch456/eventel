@@ -5,12 +5,18 @@
       <h2>{{ hotel?.hotelName }}</h2>
       <div>
         <div>日付：{{ eventDate }}</div>
-        <label>
-          部屋数: <input type="number" min="1" max="10" v-model="roomNum" @change="fetchHotelDetail" />
-        </label>
-        <label>
-          大人人数: <input type="number" min="1" max="10" v-model="adultNum" @change="fetchHotelDetail" />
-        </label>
+        <div class="counter-row">
+          <span>部屋数:</span>
+          <button class="counter-btn" @click="changeRoomNum(-1)" :disabled="roomNum <= 1">−</button>
+          <span class="counter-value">{{ roomNum }}</span>
+          <button class="counter-btn" @click="changeRoomNum(1)" :disabled="roomNum >= 10">＋</button>
+        </div>
+        <div class="counter-row">
+          <span>大人人数:</span>
+          <button class="counter-btn" @click="changeAdultNum(-1)" :disabled="adultNum <= 1">−</button>
+          <span class="counter-value">{{ adultNum }}</span>
+          <button class="counter-btn" @click="changeAdultNum(1)" :disabled="adultNum >= 10">＋</button>
+        </div>
       </div>
       <div>
         <img :src="hotel?.hotelThumbnailUrl" style="max-width: 140px;" />
@@ -35,7 +41,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from "vue";
+import { ref, watch } from "vue";
 import { fetchVacantHotelDetail } from "../api/api.js";
 const props = defineProps({
   hotelNo: Number,
@@ -47,9 +53,17 @@ const roomNum = ref(1);
 const adultNum = ref(1);
 const loading = ref(true);
 
+function changeRoomNum(delta) {
+  const newVal = roomNum.value + delta;
+  if (newVal >= 1 && newVal <= 10) roomNum.value = newVal;
+}
+function changeAdultNum(delta) {
+  const newVal = adultNum.value + delta;
+  if (newVal >= 1 && newVal <= 10) adultNum.value = newVal;
+}
+
 async function fetchHotelDetail() {
   loading.value = true;
-  // イベント日付・翌日を使ってAPIリクエスト
   const checkinDate = props.eventDate;
   const coDate = new Date(checkinDate);
   coDate.setDate(coDate.getDate() + 1);
@@ -62,23 +76,29 @@ async function fetchHotelDetail() {
     adultNum: adultNum.value,
     roomNum: roomNum.value,
   });
-  // 基本情報
+  // console.log(resp);
   hotel.value = resp.hotels?.[0] || null;
 
-  // roomInfo等を元データから取り出し
   roomPlans.value = [];
   const raw = resp.raw?.hotels?.[0]?.find(x => x.roomInfo) || {};
   if (raw.roomInfo) {
-    for (const plan of raw.roomInfo) {
-      const basic = plan.roomBasicInfo || {};
-      const charge = plan.dailyCharge || {};
-      roomPlans.value.push({
-        planId: basic.planId,
-        planName: basic.planName,
-        roomName: basic.roomName,
-        reserveUrl: basic.reserveUrl,
-        total: charge.total,
-      });
+    // roomInfoは {roomBasicInfo: ...}, {dailyCharge: ...}, ... のような配列
+    for (let i = 0; i < raw.roomInfo.length; i++) {
+      const plan = raw.roomInfo[i];
+      // roomBasicInfoがあったら次のdailyChargeとセットで
+      if (plan.roomBasicInfo) {
+        const basic = plan.roomBasicInfo;
+        // 次の要素にdailyChargeがあれば取得、なければnull
+        const chargeObj = raw.roomInfo[i + 1] && raw.roomInfo[i + 1].dailyCharge ? raw.roomInfo[i + 1] : {};
+        const charge = chargeObj.dailyCharge || {};
+        roomPlans.value.push({
+          planId: basic.planId,
+          planName: basic.planName,
+          roomName: basic.roomName,
+          reserveUrl: basic.reserveUrl,
+          total: charge.total,
+        });
+      }
     }
   }
   loading.value = false;
@@ -106,5 +126,33 @@ watch(
   border-radius: 0.6em;
   margin-bottom: 1em;
   padding: 0.6em;
+}
+
+.counter-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.6em;
+  gap: 0.5em;
+}
+.counter-btn {
+  font-size: 1.2em;
+  background: #e3e6ee;
+  border: none;
+  border-radius: 0.5em;
+  width: 2.2em;
+  height: 2.2em;
+  cursor: pointer;
+  transition: background 0.15s;
+  user-select: none;
+}
+.counter-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.counter-value {
+  display: inline-block;
+  width: 2em;
+  text-align: center;
+  font-size: 1.1em;
 }
 </style>
