@@ -17,3 +17,9 @@ docker compose up
 バックエンド: http://localhost:8000/docs
 
 で確認可能
+
+デプロイ方法
+```bash
+npm run build
+firebase deploy --only hosting
+```

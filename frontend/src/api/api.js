@@ -1,5 +1,6 @@
 import axios from "axios";
-const BASE_URL = "http://localhost:8000"; // FastAPIサーバーURL
+// const BASE_URL = "http://localhost:8000"; // FastAPIサーバーURL
+const BASE_URL = "https://eventel-backend.onrender.com"; // FastAPIサーバーURL
 
 export async function fetchEvents() {
   const res = await axios.get(`${BASE_URL}/events`);
@@ -26,4 +27,11 @@ export async function fetchVacantHotelDetail({ hotelNo, checkinDate, checkoutDat
   });
   const resp = await fetch(`${BASE_URL}/vacant-hotels?${params.toString()}`);
   return await resp.json();
+}
+
+export async function fetchVacantStatus({ hotelNos, checkinDate, checkoutDate, adultNum = 1, roomNum = 1 }) {
+  const res = await axios.post(`${BASE_URL}/vacant-status`, {
+    hotelNos, checkinDate, checkoutDate, adultNum, roomNum
+  });
+  return res.data.results; // [{ hotelNo, isVacant }, ...]
 }
