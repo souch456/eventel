@@ -16,6 +16,8 @@ Eventel のフロントエンドは Vue 3 + Vite で構築されており、イ�
 | `VITE_GOOGLE_MAPS_API_KEY` | Google Maps JavaScript API キー | `VITE_GOOGLE_MAPS_API_KEY=xxxx` |
 | `VITE_API_BASE_URL` | FastAPI サーバーのベース URL | `VITE_API_BASE_URL=http://localhost:8000` |
 
+Google Cloud Console で Maps JavaScript API を有効化し、課金設定済みのプロジェクトで API キーを発行してください。キーが未設定の場合はアプリ内で警告が表示され、地図は読み込まれません。
+
 ## セットアップ
 ```bash
 npm install
