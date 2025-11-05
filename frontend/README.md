@@ -1,33 +1,48 @@
-# .
+# Eventel Frontend
 
-This template should help get you started developing with Vue 3 in Vite.
+Eventel のフロントエンドは Vue 3 + Vite で構築されており、イベント会場と周辺ホテルを Google Maps で表示する SPA です。
 
-## Recommended IDE Setup
+## 必要要件
+- Node.js 20 以上
+- npm 10 以上
+- Google Maps JavaScript API キー
+- バックエンド API（FastAPI）が起動済みであること
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+## 環境変数
+`.env.example` をベースに `.env` を作成してください。
 
-## Type Support for `.vue` Imports in TS
+| 変数名 | 説明 | 例 |
+| --- | --- | --- |
+| `VITE_GOOGLE_MAPS_API_KEY` | Google Maps JavaScript API キー | `VITE_GOOGLE_MAPS_API_KEY=xxxx` |
+| `VITE_API_BASE_URL` | FastAPI サーバーのベース URL | `VITE_API_BASE_URL=http://localhost:8000` |
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
+## セットアップ
+```bash
 npm install
 ```
 
-### Compile and Hot-Reload for Development
-
-```sh
+## 開発サーバーの起動
+```bash
 npm run dev
 ```
+- Vite の開発サーバーが http://localhost:5173 で立ち上がります。
+- `.env` を変更した場合はサーバーを再起動してください。
 
-### Type-Check, Compile and Minify for Production
-
-```sh
+## ビルド
+```bash
 npm run build
 ```
+成果物は `dist/` に出力されます。ビルドのみ実行したい場合は `npm run build-only` を使用します。
+
+## 型チェック
+```bash
+npm run type-check
+```
+
+## 主な依存ライブラリ
+- `vue` / `vue-router` : SPA 構築
+- `@fawmi/vue-google-maps` : Google Maps 表示
+- `axios` : バックエンド API 呼び出し
+
+## API ベース URL の変更
+`src/api/api.js` では `VITE_API_BASE_URL` を参照しています。Docker Compose など別ドメインで公開する場合は `.env` を更新し再起動してください。
